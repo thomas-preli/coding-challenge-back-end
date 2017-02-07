@@ -3,7 +3,7 @@ package com.codingchallengebackend.symbol;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
+import java.util.List;
 
 @Service
 public class SymbolService {
@@ -15,8 +15,7 @@ public class SymbolService {
         this.symbolRepository = symbolRepository;
     }
 
-    @Autowired
-    public Map<String, String> getSymbols() {
-        return symbolRepository.getSymbols();
+    List<Symbol> getSymbols(String searchTerm) {
+        return symbolRepository.getSymbols(searchTerm);
     }
 }
