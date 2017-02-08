@@ -12,19 +12,11 @@ import java.util.*;
 public class SymbolRepository {
 
     List<Symbol> getSymbols(String searchTerm) {
-        List<Symbol> symbolList = new ArrayList<>();
-        int id = 1;
         Map<String, String> symbolMapping = H2DatabaseService.selectWithPreparedStatement();
-        for (Map.Entry<String, String> symbolEntry : symbolMapping.entrySet()) {
-            String symbol = symbolEntry.getKey();
-            String name = symbolEntry.getValue();
-            if (symbol.toLowerCase().contains(searchTerm.toLowerCase()) ||
-                    name.toLowerCase().contains(searchTerm.toLowerCase())) {
-                Symbol symbolObject = new Symbol(id, symbol, name);
-                symbolList.add(symbolObject);
-                id++;
-            }
-        }
+        List<Symbol> symbolList = new ArrayList<>();
+
+        addToSymbolList(symbolMapping, symbolList, searchTerm);
+
         return symbolList;
     }
 
@@ -38,6 +30,20 @@ public class SymbolRepository {
 
         RestTemplate restTemplate = new RestTemplate();
         return restTemplate.getForObject(builder.buildAndExpand(params).toUri(), QuandlData.class);
+    }
+
+    private void addToSymbolList(Map<String, String> symbolMapping, List<Symbol> symbolList, String searchTerm) {
+        int id = 1;
+        for (Map.Entry<String, String> symbolEntry : symbolMapping.entrySet()) {
+            String symbol = symbolEntry.getKey();
+            String name = symbolEntry.getValue();
+            if (symbol.toLowerCase().contains(searchTerm.toLowerCase()) ||
+                    name.toLowerCase().contains(searchTerm.toLowerCase())) {
+                Symbol symbolObject = new Symbol(id, symbol, name);
+                symbolList.add(symbolObject);
+                id++;
+            }
+        }
     }
 
     private String getStartDate() {
