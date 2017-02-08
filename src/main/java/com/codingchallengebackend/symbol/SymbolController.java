@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import javax.websocket.server.PathParam;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,12 @@ public class SymbolController {
         Map<String, List<Symbol>> result = new HashMap<>();
         result.put("symbols", symbolService.getSymbols(searchTerm));
         return result;
+    }
+
+    @CrossOrigin
+    @RequestMapping(value = "/symbol/{symbol}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public String getSymbol(@PathVariable("symbol") String symbol) {
+        return symbolService.getHistoricalSymbolData(symbol);
     }
 
 }

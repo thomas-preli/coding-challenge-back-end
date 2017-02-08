@@ -1,6 +1,7 @@
 package com.codingchallengebackend.symbol;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,14 @@ public class SymbolRepository {
             }
         }
         return symbolList;
+    }
+
+    String getHistoricalSymbolData(String symbol) {
+        final String uri = "https://www.quandl.com/api/v3/datatables/WIKI/PRICES.json?ticker=" + symbol +
+                "&qopts.columns=date,open,high,low,close&api_key=LATbUEJGyyrRvgwNsEzq";
+
+        RestTemplate restTemplate = new RestTemplate();
+        return restTemplate.getForObject(uri, String.class);
     }
 
     public static void saveSymbols(Map<String, String> symbols) {

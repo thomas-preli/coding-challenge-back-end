@@ -18,4 +18,8 @@ public class SymbolService {
     List<Symbol> getSymbols(String searchTerm) {
         return symbolRepository.getSymbols(searchTerm);
     }
+
+    String getHistoricalSymbolData(String symbol) {
+        return symbolRepository.getHistoricalSymbolData(symbol);
+    }
 }
