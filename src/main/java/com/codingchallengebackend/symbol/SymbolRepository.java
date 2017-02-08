@@ -1,24 +1,26 @@
 package com.codingchallengebackend.symbol;
 
+import com.codingchallengebackend.H2DatabaseService;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Repository
 public class SymbolRepository {
 
-    private static Map<String, String> symbols;
-
     List<Symbol> getSymbols(String searchTerm) {
         List<Symbol> symbolList = new ArrayList<>();
         int id = 1;
-        for (Map.Entry<String, String> symbol : symbols.entrySet()) {
-            if (symbol.getKey().toLowerCase().contains(searchTerm.toLowerCase()) ||
-                    symbol.getValue().toLowerCase().contains(searchTerm.toLowerCase())) {
-                Symbol symbolObject = new Symbol(id, symbol.getKey(), symbol.getValue());
+        Map<String, String> symbolMapping = H2DatabaseService.selectWithPreparedStatement();
+        for (Map.Entry<String, String> symbolEntry : symbolMapping.entrySet()) {
+            String symbol = symbolEntry.getKey();
+            String name = symbolEntry.getValue();
+            if (symbol.toLowerCase().contains(searchTerm.toLowerCase()) ||
+                    name.toLowerCase().contains(searchTerm.toLowerCase())) {
+                Symbol symbolObject = new Symbol(id, symbol, name);
                 symbolList.add(symbolObject);
                 id++;
             }
@@ -26,15 +28,23 @@ public class SymbolRepository {
         return symbolList;
     }
 
-    String getHistoricalSymbolData(String symbol) {
-        final String uri = "https://www.quandl.com/api/v3/datatables/WIKI/PRICES.json?ticker=" + symbol +
-                "&qopts.columns=date,open,high,low,close&api_key=LATbUEJGyyrRvgwNsEzq";
+    QuandlData getHistoricalSymbolData(String symbol) {
+        String uri = "https://www.quandl.com/api/v3/datatables/WIKI/PRICES.json?ticker={symbol}" +
+                "&date.gte={date}&qopts.columns=date,adj_open,adj_high,adj_low,adj_close&api_key=LATbUEJGyyrRvgwNsEzq";
+        Map<String, String> params = new HashMap<>();
+        params.put("symbol", symbol);
+        params.put("date", getStartDate());
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(uri);
 
         RestTemplate restTemplate = new RestTemplate();
-        return restTemplate.getForObject(uri, String.class);
+        return restTemplate.getForObject(builder.buildAndExpand(params).toUri(), QuandlData.class);
     }
 
-    public static void saveSymbols(Map<String, String> symbols) {
-        SymbolRepository.symbols = symbols;
+    private String getStartDate() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DATE, -14000);
+        Long dateInMilliseconds = calendar.getTimeInMillis();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        return sdf.format(new Date(dateInMilliseconds));
     }
 }
